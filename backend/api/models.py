@@ -29,7 +29,8 @@ class Product(models.Model):
     original_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     age_group = models.CharField(max_length=10, choices=AGE_CHOICES, default='3-5')
     badge = models.CharField(max_length=50, blank=True, help_text="e.g., Bestseller, New, 20% OFF")
-    image_url = models.URLField(max_length=500, default="https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?auto=format&fit=crop&w=800&q=80")
+    image_url = models.URLField(max_length=500, blank=True, null=True) 
+    image = models.ImageField(upload_to='products/main/', blank=True, null=True)
     rating = models.DecimalField(max_digits=3, decimal_places=1, default=4.9)
     stock_quantity = models.IntegerField(default=20)
     is_active = models.BooleanField(default=True)
@@ -54,3 +55,18 @@ class CartItem(models.Model):
 
     def __str__(self):
         return f"{self.quantity} x {self.product.name}"
+
+
+class ProductMedia(models.Model):
+    product = models.ForeignKey(Product, related_name='gallery', on_delete=models.CASCADE)
+    file = models.FileField(upload_to='product_gallery/')
+    is_video = models.BooleanField(default=False, help_text="Check this if uploading a video file (mp4, webm)")
+    
+    @property
+    def media_url(self):
+        if self.file:
+            return self.file.url
+        return ""
+
+    def __str__(self):
+        return f"{self.product.name} Media"

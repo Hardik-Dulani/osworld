@@ -1,30 +1,14 @@
-from typing import List, Optional
-from ninja import NinjaAPI, Schema
-from .models import Category, Product
+from typing import List
+from ninja import NinjaAPI
+from django.shortcuts import get_object_or_404
+from .models import Product
+from .schemas import ProductOut, SyncCartSchema
 
 api = NinjaAPI(
     title="Osworld Toy Store API",
     version="1.0.0",
     description="API for Osworld Kids Toys & Joy"
 )
-
-class ProductOut(Schema):
-    id: int
-    name: str
-    slug: str
-    description: str
-    price: float
-    original_price: Optional[float] = None
-    age_group: str
-    badge: str
-    image_url: str
-    rating: float
-    stock_quantity: int
-    category_name: str = None
-
-    @staticmethod
-    def resolve_category_name(obj):
-        return obj.category.name
 
 @api.get("/status")
 def backend_status(request):
@@ -34,18 +18,12 @@ def backend_status(request):
 def list_products(request):
     return Product.objects.filter(is_active=True).select_related('category').order_by('-created_at')
 
-
-# Add BaseModel to your imports at the top:
-# from pydantic import BaseModel
-
-class CartItemIn(Schema):
-    product_id: int
-    quantity: int
-
-class SyncCartSchema(Schema):
-    items: List[CartItemIn]
-    # We will use this when we build authentication later
-    user_id: Optional[int] = None 
+@api.get("/products/{product_id}", response=ProductOut)
+def get_product(request, product_id: int):
+    """
+    Fetches a single active product by its ID for the Product Detail Page.
+    """
+    return get_object_or_404(Product, id=product_id, is_active=True)
 
 @api.post("/cart/sync")
 def sync_cart(request, payload: SyncCartSchema):
