@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-
 class Category(models.Model):
     name = models.CharField(max_length=100)
     slug = models.SlugField(unique=True)
@@ -36,9 +35,12 @@ class Product(models.Model):
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    return_policy = models.CharField(max_length=100, default="3 days Return (Wrong/damaged items only)")
+    delivery_info = models.CharField(max_length=100, default="Free Delivery")
+    delivery_days = models.CharField(max_length=50, default="3-6 days")
+
     def __str__(self):
         return self.name
-
 
 class CartItem(models.Model):
     # Tied to a User if logged in, otherwise tied to a device session_key
@@ -56,7 +58,6 @@ class CartItem(models.Model):
     def __str__(self):
         return f"{self.quantity} x {self.product.name}"
 
-
 class ProductMedia(models.Model):
     product = models.ForeignKey(Product, related_name='gallery', on_delete=models.CASCADE)
     file = models.FileField(upload_to='product_gallery/')
@@ -70,3 +71,41 @@ class ProductMedia(models.Model):
 
     def __str__(self):
         return f"{self.product.name} Media"
+
+class Review(models.Model):
+    product = models.ForeignKey(Product, related_name='reviews', on_delete=models.CASCADE)
+    author_name = models.CharField(max_length=100)
+    rating = models.IntegerField(default=5)
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.rating} Star - {self.product.name} by {self.author_name}"
+
+class Coupon(models.Model):
+    code = models.CharField(max_length=20, unique=True)
+    discount_type = models.CharField(max_length=10, choices=[('percent', 'Percentage'), ('flat', 'Flat Amount')])
+    discount_value = models.FloatField(help_text="Enter 10 for 10%, or 200 for ₹200")
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.code
+
+class Order(models.Model):
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    full_name = models.CharField(max_length=100)
+    email = models.EmailField()
+    address = models.TextField()
+    total_amount = models.FloatField()
+    coupon = models.ForeignKey(Coupon, on_delete=models.SET_NULL, null=True, blank=True)
+    status = models.CharField(max_length=20, default='Processing')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Order #{self.id} - {self.full_name}"
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, related_name='items', on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True)
+    quantity = models.IntegerField(default=1)
+    price_at_time = models.FloatField()
