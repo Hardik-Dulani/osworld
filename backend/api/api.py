@@ -8,7 +8,7 @@ from django.contrib.auth import authenticate
 from .models import Product, Review, Coupon, Order, OrderItem, CartItem
 from .schemas import (
     ProductOut, SyncCartSchema, ReviewIn, ReviewOut, 
-    RegisterIn, LoginIn, CouponOut, CheckoutIn
+    RegisterIn, LoginIn, CouponOut, CheckoutIn, OrderOut # <-- Added OrderOut
 )
 
 api = NinjaAPI(
@@ -170,3 +170,14 @@ def process_checkout(request, payload: CheckoutIn):
         )
         
     return {"status": "success", "order_id": order.id, "total": final_total}
+
+@api.get("/orders/{order_id}", response=OrderOut)
+def get_order(request, order_id: int):
+    """Fetches order details for the View Order page"""
+    return get_object_or_404(Order, id=order_id)
+
+@api.get("/orders/user/{user_id}", response=List[OrderOut])
+def get_user_orders(request, user_id: int):
+    """Fetches all orders for a specific user for the 'My Orders' page"""
+    user = get_object_or_404(User, id=user_id)
+    return Order.objects.filter(user=user).order_by('-created_at')

@@ -38,13 +38,24 @@ export default function AuthPage() {
       if (!res.ok || data.error) {
         setError(data.error || "Something went wrong. Please try again.");
       } else {
-        // Success! Save user to global state and local storage
+        // 1. Log the user in globally
         login({ id: data.id, name: data.name, email: data.email });
         
-        // Sync any guest cart items to the database automatically here if needed
+        // 2. READ LOCAL STORAGE AND PUSH TO DATABASE!
+        const localCart = JSON.parse(localStorage.getItem("osworld_cart") || "[]");
+        if (localCart.length > 0) {
+          await fetch("http://127.0.0.1:8000/api/cart/sync", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              items: localCart.map((i: any) => ({ product_id: i.id, quantity: i.quantity })),
+              user_id: data.id
+            })
+          }).catch(err => console.error("Failed to sync cart", err));
+        }
         
-        // Redirect to cart
-        router.push("/cart");
+        // 3. Redirect back to Cart and Auto-Open Checkout
+        router.push("/cart?checkout=true");
       }
     } catch (err) {
       setError("Failed to connect to the server.");

@@ -4,9 +4,11 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { 
-  Menu, X, ShoppingBag, Search, Heart, Sparkles, Baby, Blocks, Flame, Tag 
+  Menu, X, ShoppingBag, Search, Sparkles, Baby, Blocks, Flame, Tag, User as UserIcon, LogOut
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
 
 const navLinks = [
   { name: "All Toys", href: "/toys", icon: Blocks },
@@ -17,32 +19,22 @@ const navLinks = [
 
 export default function Navbar() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [cartCount, setCartCount] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
   
-  // Sync search input with the URL instantly
-  const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
-
-  // Update cart count by reading localStorage
+  const { totalItems } = useCart(); 
+  const { user, logout } = useAuth();
+  
   useEffect(() => {
-    const updateCartCount = () => {
-      const cart = JSON.parse(localStorage.getItem("osworld_cart") || "[]");
-      setCartCount(cart.reduce((total: number, item: any) => total + item.quantity, 0));
-    };
-
-    updateCartCount();
-    // Listen for our custom event when an item is added
-    window.addEventListener("cartUpdated", updateCartCount);
-    return () => window.removeEventListener("cartUpdated", updateCartCount);
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      setSearchQuery(urlParams.get("search") || "");
+    }
   }, []);
 
-  // Fire this on every single keystroke!
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
     setSearchQuery(query);
-    
-    // Updates the URL instantly without reloading the page
     if (query.trim()) {
       router.replace(`/?search=${encodeURIComponent(query)}`, { scroll: false });
     } else {
@@ -54,7 +46,6 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 w-full border-b border-border bg-card shadow-xs">
       <div className="mx-auto flex h-18 max-w-7xl items-center justify-between px-3 sm:px-6 lg:px-8">
         
-        {/* Left: Mobile Hamburger & Brand */}
         <div className="flex items-center gap-2 sm:gap-3">
           <button
             type="button"
@@ -69,17 +60,12 @@ export default function Navbar() {
               <Sparkles className="h-5 w-5 fill-current" />
             </div>
             <div className="flex flex-col">
-              <span className="font-extrabold text-xl sm:text-2xl tracking-tight text-foreground leading-none">
-                osworld
-              </span>
-              <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-primary">
-                Toys & Joy
-              </span>
+              <span className="font-extrabold text-xl sm:text-2xl tracking-tight text-foreground leading-none">osworld</span>
+              <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-primary">Toys & Joy</span>
             </div>
           </Link>
         </div>
 
-        {/* Center: Desktop Navigation Links */}
         <nav className="hidden md:flex items-center gap-1 lg:gap-2">
           {navLinks.map((link) => (
             <Link key={link.name} href={link.href} className="relative flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-foreground/80 hover:text-primary hover:bg-muted rounded-xl">
@@ -88,9 +74,7 @@ export default function Navbar() {
           ))}
         </nav>
 
-        {/* Right: Actions */}
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          {/* Desktop Search Bar */}
+        <div className="flex items-center gap-3 sm:gap-4">
           <div className="hidden lg:flex relative">
             <input
               type="text"
@@ -102,26 +86,64 @@ export default function Navbar() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           </div>
 
-          <Link href="/cart" className="relative flex h-10 items-center gap-1.5 sm:gap-2 rounded-xl bg-primary px-3 sm:px-4 text-primary-foreground font-semibold shadow-xs hover:opacity-95 active:scale-95">
+          <Link href="/cart" className="relative flex h-10 items-center gap-1.5 sm:gap-2 rounded-xl bg-primary px-3 sm:px-4 text-primary-foreground font-semibold shadow-xs hover:opacity-90 active:scale-95 transition-all">
             <ShoppingBag className="h-4 w-4" />
             <span className="hidden sm:inline text-xs font-bold">Cart</span>
-            {cartCount > 0 && (
+            {totalItems > 0 && (
               <span className="flex h-5 w-5 items-center justify-center rounded-full bg-card text-foreground text-xs font-black shadow-xs">
-                {cartCount}
+                {totalItems}
               </span>
             )}
           </Link>
+
+          <div className="hidden sm:flex items-center gap-3 pl-4 border-l border-border ml-1">
+            {user ? (
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-muted-foreground">Hi, {user.name.split(' ')[0]}</span>
+                <button onClick={logout} className="p-1.5 text-muted-foreground hover:text-destructive transition-colors rounded-lg hover:bg-muted" title="Logout">
+                  <LogOut className="h-4 w-4" />
+                </button>
+              </div>
+            ) : (
+              <Link href="/auth" className="flex h-10 items-center gap-1.5 sm:gap-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 px-3 sm:px-4 text-white hover:text-white font-semibold shadow-xs active:scale-95 transition-all border-0">
+                <UserIcon className="h-4 w-4" />
+                <span className="hidden sm:inline text-xs font-bold">Sign In</span>
+              </Link>
+            )}
+          </div>
+
         </div>
       </div>
 
-      {/* Mobile Drawer */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsMobileMenuOpen(false)} className="fixed inset-0 top-18 z-40 bg-foreground/50 md:hidden" />
             <motion.aside initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }} transition={{ type: "spring", damping: 25, stiffness: 220 }} className="fixed inset-y-0 left-0 top-18 z-50 flex w-[85%] max-w-sm flex-col border-r border-border bg-card p-6 shadow-2xl md:hidden overflow-y-auto">
               
-              {/* Mobile Search Bar! */}
+              <div className="mb-6 pb-6 border-b border-border">
+                {user ? (
+                  <div className="flex items-center justify-between bg-muted/50 p-4 rounded-2xl">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center text-primary font-black">
+                        {user.name.charAt(0)}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="font-bold text-sm">{user.name}</span>
+                        <span className="text-xs text-muted-foreground">{user.email}</span>
+                      </div>
+                    </div>
+                    <button onClick={() => { logout(); setIsMobileMenuOpen(false); }} className="p-2 text-muted-foreground hover:text-destructive">
+                      <LogOut className="h-5 w-5" />
+                    </button>
+                  </div>
+                ) : (
+                  <Link href="/auth" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center justify-center gap-2 w-full h-12 bg-emerald-500 hover:bg-emerald-600 text-white hover:text-white active:scale-95 transition-all rounded-xl font-bold border-0">
+                    <UserIcon className="h-5 w-5" /> Sign In or Register
+                  </Link>
+                )}
+              </div>
+
               <div className="relative mb-6">
                 <input
                   type="text"

@@ -92,13 +92,24 @@ class Coupon(models.Model):
         return self.code
 
 class Order(models.Model):
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Confirmed', 'Confirmed'),
+        ('Processing', 'Processing'),
+        ('Shipped', 'Shipped'),
+        ('Delivered', 'Delivered'),
+        ('Cancelled', 'Cancelled'),
+        ('Returned','Returned')
+    ]
+    
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     full_name = models.CharField(max_length=100)
     email = models.EmailField()
     address = models.TextField()
     total_amount = models.FloatField()
     coupon = models.ForeignKey(Coupon, on_delete=models.SET_NULL, null=True, blank=True)
-    status = models.CharField(max_length=20, default='Processing')
+    # Added choices here:
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Processing')
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

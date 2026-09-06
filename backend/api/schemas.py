@@ -101,3 +101,34 @@ class CheckoutIn(Schema):
     items: List[CheckoutItemIn]
     coupon_code: Optional[str] = None
     user_id: Optional[int] = None
+
+# Add this to the very bottom of schemas.py
+class OrderItemOut(Schema):
+    product_name: str
+    quantity: int
+    price_at_time: float
+    image_url: str
+
+    @staticmethod
+    def resolve_product_name(obj):
+        return obj.product.name if obj.product else "Unknown Product"
+
+    @staticmethod
+    def resolve_image_url(obj):
+        if obj.product:
+            return obj.product.image.url if obj.product.image else (obj.product.image_url or "")
+        return ""
+
+class OrderOut(Schema):
+    id: int
+    full_name: str
+    email: str
+    address: str
+    total_amount: float
+    status: str
+    created_at: datetime.datetime
+    items: List[OrderItemOut]
+
+    @staticmethod
+    def resolve_items(obj):
+        return obj.items.all()

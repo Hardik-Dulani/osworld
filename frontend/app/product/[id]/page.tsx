@@ -6,6 +6,7 @@ import { ArrowLeft, Star, ShoppingBag, Heart, Minus, Plus, ShieldCheck, Sparkles
 import { Button } from "@/components/ui/button";
 import ProductGallery from "@/components/ProductGallery";
 import ProductGrid from "@/components/ProductGrid";
+import { useCart } from "@/context/CartContext";
 
 export default function ProductPage() {
   const params = useParams();
@@ -14,7 +15,11 @@ export default function ProductPage() {
   const [product, setProduct] = useState<any>(null);
   const [suggestedProducts, setSuggestedProducts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [cartQty, setCartQty] = useState(0);
+
+  const { cartItems, updateQuantity } = useCart();
+  
+  const cartItem = cartItems.find((item: any) => item.id === product?.id);
+  const cartQty = cartItem ? cartItem.quantity : 0;
 
   const [reviewForm, setReviewForm] = useState({ author_name: "", rating: 5, comment: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -43,34 +48,6 @@ export default function ProductPage() {
       })
       .catch((err) => console.error("Failed to fetch suggestions", err));
   }, [params.id]);
-
-  useEffect(() => {
-    if (!product) return;
-    const savedCart = JSON.parse(localStorage.getItem("osworld_cart") || "[]");
-    const existingItem = savedCart.find((item: any) => item.id === product.id);
-    if (existingItem) setCartQty(existingItem.quantity);
-  }, [product]);
-
-  const updateCart = (delta: number) => {
-    if (!product) return;
-    const existingCart = JSON.parse(localStorage.getItem("osworld_cart") || "[]");
-    const itemIndex = existingCart.findIndex((item: any) => item.id === product.id);
-    if (itemIndex >= 0) {
-      existingCart[itemIndex].quantity += delta;
-      if (existingCart[itemIndex].quantity <= 0) existingCart.splice(itemIndex, 1);
-    } else if (delta > 0) {
-      existingCart.push({ ...product, quantity: 1 });
-    }
-    localStorage.setItem("osworld_cart", JSON.stringify(existingCart));
-    setCartQty((prev) => Math.max(0, prev + delta));
-    window.dispatchEvent(new Event("cartUpdated"));
-
-    fetch("http://127.0.0.1:8000/api/cart/sync", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ items: existingCart.map((i: any) => ({ product_id: i.id, quantity: i.quantity })) })
-    }).catch(err => console.error("Sync failed:", err));
-  };
 
   const submitReview = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -137,12 +114,10 @@ export default function ProductPage() {
               )}
             </div>
 
-            {/* TIGHTER SPACING: Reduced mt-8 to mt-4 */}
             <p className="mt-4 text-base text-muted-foreground leading-relaxed lg:pr-12">
               {product.description}
             </p>
 
-            {/* THE NEW COMPACT POLICY ROW */}
             <div className="mt-6 lg:mr-12 flex flex-col sm:flex-row gap-3">
               <div className="flex-1 flex items-center gap-3 bg-secondary/10 p-3 sm:p-4 rounded-2xl border border-secondary/20">
                 <div className="h-8 w-8 bg-background rounded-full flex shrink-0 items-center justify-center shadow-sm border border-border">
@@ -162,16 +137,15 @@ export default function ProductPage() {
               </div>
             </div>
 
-            {/* TIGHTER SPACING: Reduced mt-8 to mt-6 */}
             <div className="mt-6 mb-2 lg:pr-12">
               {cartQty > 0 ? (
                 <div className="flex h-14 w-full items-center justify-between rounded-2xl border-2 border-primary bg-primary/5 px-2">
-                  <button onClick={() => updateCart(-1)} className="flex h-10 w-12 items-center justify-center rounded-xl hover:bg-primary/20 text-primary transition-colors"><Minus className="h-5 w-5" /></button>
+                  <button onClick={() => updateQuantity(product, -1)} className="flex h-10 w-12 items-center justify-center rounded-xl hover:bg-primary/20 text-primary transition-colors"><Minus className="h-5 w-5" /></button>
                   <span className="text-lg font-black text-primary select-none">{cartQty} in Cart</span>
-                  <button onClick={() => updateCart(1)} className="flex h-10 w-12 items-center justify-center rounded-xl hover:bg-primary/20 text-primary transition-colors"><Plus className="h-5 w-5" /></button>
+                  <button onClick={() => updateQuantity(product, 1)} className="flex h-10 w-12 items-center justify-center rounded-xl hover:bg-primary/20 text-primary transition-colors"><Plus className="h-5 w-5" /></button>
                 </div>
               ) : (
-                <Button onClick={() => updateCart(1)} className="h-14 w-full rounded-2xl bg-primary text-base font-black text-primary-foreground hover:bg-primary/90 shadow-md transition-all active:scale-[0.98]">
+                <Button onClick={() => updateQuantity(product, 1)} className="h-14 w-full rounded-2xl bg-primary text-base font-black text-primary-foreground hover:bg-primary/90 shadow-md transition-all active:scale-[0.98]">
                   <ShoppingBag className="h-5 w-5 mr-2" /> Add to Cart
                 </Button>
               )}
@@ -179,13 +153,10 @@ export default function ProductPage() {
           </div>
         </div>
 
-        {/* TIGHTER SPACING: Reduced my-16 to my-8 */}
         <hr className="my-8 lg:my-10 border-border" />
 
-        {/* PRODUCT REVIEWS SECTION */}
         <div className="px-4 sm:px-6 lg:px-0 mb-8 lg:mb-12">
           
-          {/* HEADER WITH TOGGLE BUTTON */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
             <h2 className="text-2xl font-black text-foreground">Customer Reviews</h2>
             <Button 
@@ -197,7 +168,6 @@ export default function ProductPage() {
             </Button>
           </div>
 
-          {/* SMOOTH ANIMATED ACCORDION FORM */}
           <div 
             className={`grid transition-all duration-500 ease-in-out ${
               isReviewFormOpen ? "grid-rows-[1fr] opacity-100 mb-8" : "grid-rows-[0fr] opacity-0 mb-0"
@@ -257,7 +227,6 @@ export default function ProductPage() {
             </div>
           </div>
           
-          {/* THE REVIEW GRID */}
           {(!product.reviews || product.reviews.length === 0) ? (
             <div className="p-8 sm:p-12 text-center bg-muted/30 rounded-3xl border border-dashed border-border mt-4">
               <p className="text-muted-foreground font-bold">No reviews yet. Be the first to review this toy!</p>
@@ -284,10 +253,8 @@ export default function ProductPage() {
           )}
         </div>
 
-        {/* TIGHTER SPACING: Reduced my-16 to my-8 */}
         <hr className="my-8 lg:my-10 border-border" />
 
-        {/* SEE MORE INFINITE GRID SECTION */}
         <div className="px-4 sm:px-6 lg:px-0">
           <div className="flex items-center gap-2 mb-6 sm:mb-8">
             <Sparkles className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
