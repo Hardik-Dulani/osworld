@@ -8,7 +8,7 @@ from django.contrib.auth import authenticate
 from .models import Product, Review, Coupon, Order, OrderItem, CartItem
 from .schemas import (
     ProductOut, SyncCartSchema, ReviewIn, ReviewOut, 
-    RegisterIn, LoginIn, CouponOut, CheckoutIn, OrderOut # <-- Added OrderOut
+    RegisterIn, LoginIn, CouponOut, CheckoutIn, OrderOut, StatusUpdateIn 
 )
 
 api = NinjaAPI(
@@ -172,9 +172,20 @@ def process_checkout(request, payload: CheckoutIn):
     return {"status": "success", "order_id": order.id, "total": final_total}
 
 @api.get("/orders/{order_id}", response=OrderOut)
-def get_order(request, order_id: int):
-    """Fetches order details for the View Order page"""
-    return get_object_or_404(Order, id=order_id)
+def get_order(request, order_id: int, user_id: int):
+    """Fetches order details securely, ensuring it belongs to the exact user requesting it"""
+    return get_object_or_404(Order, id=order_id, user_id=user_id)
+
+@api.post("/orders/{order_id}/status")
+def update_order_status(request, order_id: int, user_id: int, payload: StatusUpdateIn):
+    """Allows users to Cancel/Return securely"""
+    # Verifies ownership before allowing status updates!
+    order = get_object_or_404(Order, id=order_id, user_id=user_id)
+    if payload.status in ['Cancelled', 'Returned']:
+        order.status = payload.status
+        order.save()
+        return {"status": "success", "new_status": order.status}
+    return {"error": "Invalid status update"}
 
 @api.get("/orders/user/{user_id}", response=List[OrderOut])
 def get_user_orders(request, user_id: int):

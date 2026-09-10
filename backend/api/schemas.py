@@ -1,7 +1,7 @@
 from typing import List, Optional
 import datetime
 from ninja import Schema
-
+import datetime
 class ProductMediaOut(Schema):
     id: int
     media_url: str
@@ -104,10 +104,15 @@ class CheckoutIn(Schema):
 
 # Add this to the very bottom of schemas.py
 class OrderItemOut(Schema):
+    product_id: int # <-- Added so we can link reviews to products
     product_name: str
     quantity: int
     price_at_time: float
     image_url: str
+
+    @staticmethod
+    def resolve_product_id(obj):
+        return obj.product.id if obj.product else 0
 
     @staticmethod
     def resolve_product_name(obj):
@@ -119,6 +124,11 @@ class OrderItemOut(Schema):
             return obj.product.image.url if obj.product.image else (obj.product.image_url or "")
         return ""
 
+class StatusUpdateIn(Schema):
+    status: str
+    reason: Optional[str] = None # <-- Added reason
+
+
 class OrderOut(Schema):
     id: int
     full_name: str
@@ -127,6 +137,7 @@ class OrderOut(Schema):
     total_amount: float
     status: str
     created_at: datetime.datetime
+    expected_delivery_date: Optional[datetime.date] = None # <-- Added
     items: List[OrderItemOut]
 
     @staticmethod

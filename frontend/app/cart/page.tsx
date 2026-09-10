@@ -83,14 +83,17 @@ export default function CartPage() {
     setIsApplyingCoupon(false);
   };
 
+// Inside your CartPage component, update this single function:
+
   const handleProceedToCheckout = () => {
     if (!user) {
-      router.push("/auth?checkout=true");
+      // NEW: Tell Auth page to send us right back to the checkout modal!
+      localStorage.setItem('auth_redirect', '/cart?checkout=true');
+      router.push("/auth");
     } else {
       setIsCheckoutOpen(true);
     }
   };
-
   const submitCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
     if (confirmText.toUpperCase() !== "CONFIRM") return;

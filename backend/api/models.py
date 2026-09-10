@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
-
+from django.utils import timezone
+from datetime import timedelta
 class Category(models.Model):
     name = models.CharField(max_length=100)
     slug = models.SlugField(unique=True)
@@ -91,6 +92,7 @@ class Coupon(models.Model):
     def __str__(self):
         return self.code
 
+
 class Order(models.Model):
     STATUS_CHOICES = [
         ('Pending', 'Pending'),
@@ -108,9 +110,17 @@ class Order(models.Model):
     address = models.TextField()
     total_amount = models.FloatField()
     coupon = models.ForeignKey(Coupon, on_delete=models.SET_NULL, null=True, blank=True)
-    # Added choices here:
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Processing')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+    
+    # NEW: Editable delivery date
+    expected_delivery_date = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        # Automatically set delivery date to 7 days from now if not provided
+        if not self.expected_delivery_date:
+            self.expected_delivery_date = timezone.now().date() + timedelta(days=7)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Order #{self.id} - {self.full_name}"

@@ -37,6 +37,8 @@ class OrderItemInline(admin.TabularInline):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('id', 'full_name', 'total_amount', 'status', 'created_at')
-    list_filter = ('status', 'created_at')
+    list_display = ('id', 'full_name', 'total_amount', 'status', 'expected_delivery_date', 'created_at')
+    list_filter = ('status', 'expected_delivery_date', 'created_at')
+    # NEW: Allows you to edit status and delivery date right from the list view!
+    list_editable = ('status', 'expected_delivery_date')
     inlines = [OrderItemInline]

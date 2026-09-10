@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
 
 interface User {
   id: number;
@@ -25,6 +26,8 @@ const AuthContext = createContext<AuthContextType>({
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     const storedUser = localStorage.getItem("osworld_user");
@@ -42,6 +45,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const logout = () => {
     setUser(null);
     localStorage.removeItem("osworld_user");
+    
+    // SECURITY: Wipe the cart completely so it doesn't bleed into another user
+    localStorage.removeItem("osworld_cart");
+    window.dispatchEvent(new Event("cartUpdated"));
+
+    // SECURITY: Boot them to the homepage if they are on a protected route!
+    if (pathname.startsWith("/order")) {
+      router.push("/");
+    }
   };
 
   return (

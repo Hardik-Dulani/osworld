@@ -38,10 +38,9 @@ export default function AuthPage() {
       if (!res.ok || data.error) {
         setError(data.error || "Something went wrong. Please try again.");
       } else {
-        // 1. Log the user in globally
         login({ id: data.id, name: data.name, email: data.email });
         
-        // 2. READ LOCAL STORAGE AND PUSH TO DATABASE!
+        // Sync Guest Cart
         const localCart = JSON.parse(localStorage.getItem("osworld_cart") || "[]");
         if (localCart.length > 0) {
           await fetch("http://127.0.0.1:8000/api/cart/sync", {
@@ -54,8 +53,10 @@ export default function AuthPage() {
           }).catch(err => console.error("Failed to sync cart", err));
         }
         
-        // 3. Redirect back to Cart and Auto-Open Checkout
-        router.push("/cart?checkout=true");
+        // NEW: Smart Redirect Logic
+        const redirectPath = localStorage.getItem('auth_redirect') || '/';
+        localStorage.removeItem('auth_redirect'); // Clean up
+        router.push(redirectPath);
       }
     } catch (err) {
       setError("Failed to connect to the server.");

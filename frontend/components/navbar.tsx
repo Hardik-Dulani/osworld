@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { 
-  Menu, X, ShoppingBag, Search, Sparkles, Baby, Blocks, Flame, Tag, User as UserIcon, LogOut
+  Menu, X, ShoppingBag, Search, Sparkles, Baby, Blocks, Flame, Tag, User as UserIcon, LogOut, Package
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "@/context/CartContext";
@@ -19,6 +19,8 @@ const navLinks = [
 
 export default function Navbar() {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   
@@ -39,6 +41,13 @@ export default function Navbar() {
       router.replace(`/?search=${encodeURIComponent(query)}`, { scroll: false });
     } else {
       router.replace(`/`, { scroll: false });
+    }
+  };
+
+  // NEW: Save the current page to localStorage before going to Auth
+  const handleAuthRedirect = () => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem('auth_redirect', window.location.pathname + window.location.search);
     }
   };
 
@@ -96,16 +105,20 @@ export default function Navbar() {
             )}
           </Link>
 
-          <div className="hidden sm:flex items-center gap-3 pl-4 border-l border-border ml-1">
+          <div className="hidden md:flex items-center gap-3 pl-4 border-l border-border ml-1">
             {user ? (
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-muted-foreground">Hi, {user.name.split(' ')[0]}</span>
+              <div className="flex items-center gap-3">
+                <Link href="/orders" className="text-xs font-bold text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+                  <Package className="h-4 w-4" /> Orders
+                </Link>
+                <span className="text-border">|</span>
+                <span className="text-xs font-bold text-foreground">Hi, {user.name.split(' ')[0]}</span>
                 <button onClick={logout} className="p-1.5 text-muted-foreground hover:text-destructive transition-colors rounded-lg hover:bg-muted" title="Logout">
                   <LogOut className="h-4 w-4" />
                 </button>
               </div>
             ) : (
-              <Link href="/auth" className="flex h-10 items-center gap-1.5 sm:gap-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 px-3 sm:px-4 text-white hover:text-white font-semibold shadow-xs active:scale-95 transition-all border-0">
+              <Link href="/auth" onClick={handleAuthRedirect} className="flex h-10 items-center gap-1.5 sm:gap-2 rounded-xl !bg-[#10b981] hover:!bg-[#059669] px-3 sm:px-4 !text-white font-semibold shadow-xs active:scale-95 transition-all border-0">
                 <UserIcon className="h-4 w-4" />
                 <span className="hidden sm:inline text-xs font-bold">Sign In</span>
               </Link>
@@ -123,22 +136,27 @@ export default function Navbar() {
               
               <div className="mb-6 pb-6 border-b border-border">
                 {user ? (
-                  <div className="flex items-center justify-between bg-muted/50 p-4 rounded-2xl">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center text-primary font-black">
-                        {user.name.charAt(0)}
+                  <div className="flex flex-col gap-3">
+                    <div className="flex items-center justify-between bg-muted/50 p-4 rounded-2xl">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center text-primary font-black">
+                          {user.name.charAt(0)}
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="font-bold text-sm">{user.name}</span>
+                          <span className="text-xs text-muted-foreground">{user.email}</span>
+                        </div>
                       </div>
-                      <div className="flex flex-col">
-                        <span className="font-bold text-sm">{user.name}</span>
-                        <span className="text-xs text-muted-foreground">{user.email}</span>
-                      </div>
+                      <button onClick={() => { logout(); setIsMobileMenuOpen(false); }} className="p-2 text-muted-foreground hover:text-destructive">
+                        <LogOut className="h-5 w-5" />
+                      </button>
                     </div>
-                    <button onClick={() => { logout(); setIsMobileMenuOpen(false); }} className="p-2 text-muted-foreground hover:text-destructive">
-                      <LogOut className="h-5 w-5" />
-                    </button>
+                    <Link href="/orders" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center justify-center gap-2 w-full h-10 bg-secondary/20 text-foreground hover:bg-secondary/30 transition-all rounded-xl font-bold text-sm">
+                      <Package className="h-4 w-4" /> View My Orders
+                    </Link>
                   </div>
                 ) : (
-                  <Link href="/auth" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center justify-center gap-2 w-full h-12 bg-emerald-500 hover:bg-emerald-600 text-white hover:text-white active:scale-95 transition-all rounded-xl font-bold border-0">
+                  <Link href="/auth" onClick={() => { handleAuthRedirect(); setIsMobileMenuOpen(false); }} className="flex items-center justify-center gap-2 w-full h-12 !bg-[#10b981] hover:!bg-[#059669] !text-white active:scale-95 transition-all rounded-xl font-bold border-0">
                     <UserIcon className="h-5 w-5" /> Sign In or Register
                   </Link>
                 )}
