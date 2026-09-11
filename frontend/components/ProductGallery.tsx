@@ -54,7 +54,7 @@ export default function ProductGallery({ product }: { product: any }) {
   const getFullUrl = (url: string) => {
     if (!url) return "";
     if (url.startsWith('http')) return url;
-    return url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${url}` : `${process.env.NEXT_PUBLIC_API_URL}/${url}`;
+    return url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}/${url}` : `${process.env.NEXT_PUBLIC_API_URL}/${url}`;
   };
 
   if (!activeMedia) return null;
