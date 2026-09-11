@@ -81,15 +81,23 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # Django 4.2+ standard for routing file storage
+# Django 4.2+ standard for routing file storage
 STORAGES = {
     "default": {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
     },
     "staticfiles": {
-        # Changed this line to use standard Django storage instead of WhiteNoise Manifest
-        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "OPTIONS": {
+            "manifest_strict": False, # This stops the icon-debug.svg crash properly!
+        },
     },
 }
+
+# You can delete these old fallback lines entirely to prevent conflicts:
+# DEFAULT_FILE_STORAGE = ...
+# STATICFILES_STORAGE = ...
+# WHITENOISE_MANIFEST_STRICT = False
 
 # Fallbacks for older Django versions
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
