@@ -83,13 +83,13 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# Django 4.2+ standard for routing file storage
+
+
 class SafeWhiteNoiseStorage(CompressedStaticFilesStorage):
-    def _compress_path(self, full_path):
-        # SILVER BULLET: Actually check if the file physically exists on the disk 
-        # before letting WhiteNoise try to open and compress it!
-        if os.path.exists(full_path):
-            yield from super()._compress_path(full_path)
+    def post_process(self, *args, **kwargs):
+        # NUKE THE COMPRESSION STEP ENTIRELY.
+        # No background threads, no file scanning, no crashes.
+        return []
 STORAGES = {
     "default": {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
