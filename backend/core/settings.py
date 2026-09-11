@@ -12,12 +12,20 @@ DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 ALLOWED_HOSTS = ['*'] # For now, allow all. You can restrict this to your specific Render/Vercel URLs later.
 
 INSTALLED_APPS = [
-    # ... your existing apps
-    'corsheaders', # Ensure this is here
+    # Core Django Apps (These were missing!)
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # Third-Party Apps
+    'corsheaders',
+
+    # Your Apps
     'api',
 ]
-
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware', # MUST BE AT THE TOP
     'django.middleware.security.SecurityMiddleware',
