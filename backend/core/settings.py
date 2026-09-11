@@ -85,17 +85,12 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 
 
-class SafeWhiteNoiseStorage(CompressedStaticFilesStorage):
-    def post_process(self, *args, **kwargs):
-        # NUKE THE COMPRESSION STEP ENTIRELY.
-        # No background threads, no file scanning, no crashes.
-        return []
 STORAGES = {
     "default": {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
     },
     "staticfiles": {
-        "BACKEND": "core.settings.SafeWhiteNoiseStorage",
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
 }
 # You can delete these old fallback lines entirely to prevent conflicts:
