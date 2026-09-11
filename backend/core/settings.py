@@ -93,6 +93,8 @@ STORAGES = {
 # Fallbacks for older Django versions
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# Tells WhiteNoise not to crash if Django's admin CSS references a missing icon
+WHITENOISE_MANIFEST_STRICT = False
 # ---------------------------------------------------------
 
 # Allow your Vercel frontend to talk to your Render backend
