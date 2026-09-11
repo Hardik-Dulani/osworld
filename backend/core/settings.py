@@ -25,7 +25,11 @@ INSTALLED_APPS = [
 
     # Your Apps
     'api',
+    'cloudinary_storage',
+    'django.contrib.staticfiles',
+    'cloudinary',
 ]
+
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',  # Must be at the absolute top
     'django.middleware.security.SecurityMiddleware',
@@ -38,6 +42,11 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
+    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
+}
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates', # Fixes admin.E403
@@ -81,3 +90,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Media files (for product images)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
