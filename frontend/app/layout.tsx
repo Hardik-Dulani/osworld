@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import ConditionalNavbar from "@/components/ConditionalNavbar"; // <-- Swapped!
+import ConditionalNavbar from "@/components/ConditionalNavbar";
 import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
+import { Suspense } from "react";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -22,7 +23,10 @@ export default function RootLayout({
       <body className={inter.className}>
         <AuthProvider>
           <CartProvider>
-            <ConditionalNavbar /> {/* <-- Now hides automatically on /auth! */}
+            {/* Wrapped in Suspense to satisfy Next.js static build requirements */}
+            <Suspense fallback={null}>
+              <ConditionalNavbar />
+            </Suspense>
             {children}
           </CartProvider>
         </AuthProvider>
