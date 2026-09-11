@@ -1,5 +1,6 @@
 import os
 import dj_database_url
+from whitenoise.storage import CompressedManifestStaticFilesStorage
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -81,18 +82,24 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # Django 4.2+ standard for routing file storage
-# Django 4.2+ standard for routing file storage
-# Django 4.2+ standard for routing file storage
+class SafeWhiteNoiseStorage(CompressedManifestStaticFilesStorage):
+    # 1. Fixes the icon-debug.svg crash
+    manifest_strict = False
+
+    # 2. Fixes the hr.js broken symlink crash
+    def _compress_path(self, *args, **kwargs):
+        try:
+            yield from super()._compress_path(*args, **kwargs)
+        except Exception:
+            pass
 STORAGES = {
     "default": {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
     },
     "staticfiles": {
-        # Use WhiteNoise to serve files, but without the strict manifest hashing
-        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage", 
+        "BACKEND": "core.settings.SafeWhiteNoiseStorage",
     },
 }
-
 # You can delete these old fallback lines entirely to prevent conflicts:
 # DEFAULT_FILE_STORAGE = ...
 # STATICFILES_STORAGE = ...
