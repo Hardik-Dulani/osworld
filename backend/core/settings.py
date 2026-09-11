@@ -26,7 +26,7 @@ INSTALLED_APPS = [
     # Your Apps
     'api',
     'cloudinary_storage',
-    'django.contrib.staticfiles',
+  
     'cloudinary',
 ]
 
