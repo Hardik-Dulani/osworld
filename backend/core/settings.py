@@ -27,14 +27,32 @@ INSTALLED_APPS = [
     'api',
 ]
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware', # MUST BE AT THE TOP
+    'corsheaders.middleware.CorsMiddleware',  # Must be at the absolute top
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware', # ADD THIS EXACTLY HERE
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Must be right after SecurityMiddleware
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    # ... rest of your middleware
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',  # Fixes admin.E408
+    'django.contrib.messages.middleware.MessageMiddleware',     # Fixes admin.E409
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates', # Fixes admin.E403
+        'DIRS': [],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
 # Database: Use Render's PostgreSQL if available, otherwise fallback to local SQLite
 DATABASES = {
     'default': dj_database_url.config(
