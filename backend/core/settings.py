@@ -1,6 +1,6 @@
 import os
 import dj_database_url
-from whitenoise.storage import CompressedManifestStaticFilesStorage
+from whitenoise.storage import CompressedStaticFilesStorage
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -82,13 +82,10 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # Django 4.2+ standard for routing file storage
-class SafeWhiteNoiseStorage(CompressedManifestStaticFilesStorage):
-    # 1. Fixes the icon-debug.svg crash
-    manifest_strict = False
-
-    # 2. Fixes the hr.js broken symlink crash
+class SafeWhiteNoiseStorage(CompressedStaticFilesStorage):
     def _compress_path(self, *args, **kwargs):
         try:
+            # Safely skips the broken hr.js file without crashing the build
             yield from super()._compress_path(*args, **kwargs)
         except Exception:
             pass
