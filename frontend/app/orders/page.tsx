@@ -21,14 +21,14 @@ useEffect(() => {
       return;
     }
 
-    fetch(`process.env.NEXT_PUBLIC_API_URL/api/orders/user/${user.id}`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/orders/user/${user.id}`)
       .then((res) => res.json())
       .then((data) => { setOrders(data); setIsLoading(false); })
       .catch(() => setIsLoading(false));
       
   }, [user, isAuthLoading, router]);
 
-  const getFullUrl = (url: string) => url ? (url.startsWith('http') ? url : `process.env.NEXT_PUBLIC_API_URL${url}`) : "";
+  const getFullUrl = (url: string) => url ? (url.startsWith('http') ? url : `${process.env.NEXT_PUBLIC_API_URL}${url}`) : "";
 
   const getStatusStyle = (status: string) => {
     switch (status) {

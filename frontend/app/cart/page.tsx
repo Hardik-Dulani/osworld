@@ -39,7 +39,7 @@ export default function CartPage() {
 
   useEffect(() => {
     setIsMounted(true);
-    fetch(`process.env.NEXT_PUBLIC_API_URL/api/products`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products`)
       .then((res) => res.json())
       .then((data) => setSuggestedProducts(data))
       .catch((err) => console.error("Failed to fetch suggestions", err));
@@ -57,7 +57,7 @@ export default function CartPage() {
 
   const getFullUrl = (url: string) => {
     if (!url) return "";
-    return url.startsWith('http') ? url : `process.env.NEXT_PUBLIC_API_URL${url}`;
+    return url.startsWith('http') ? url : `${process.env.NEXT_PUBLIC_API_URL}${url}`;
   };
 
   const handleApplyCoupon = async () => {
@@ -66,7 +66,7 @@ export default function CartPage() {
     setIsApplyingCoupon(true);
     setCouponMessage(null);
     try {
-      const res = await fetch(`process.env.NEXT_PUBLIC_API_URL/api/coupons/${code}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/coupons/${code}`);
       if (res.ok) {
         const data = await res.json();
         setActiveCoupon(data);
@@ -108,7 +108,7 @@ export default function CartPage() {
     };
 
     try {
-      const res = await fetch("process.env.NEXT_PUBLIC_API_URL/api/checkout", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/checkout`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

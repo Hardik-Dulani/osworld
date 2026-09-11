@@ -43,7 +43,7 @@ export default function AuthPage() {
         // Sync Guest Cart
         const localCart = JSON.parse(localStorage.getItem("osworld_cart") || "[]");
         if (localCart.length > 0) {
-          await fetch("process.env.NEXT_PUBLIC_API_URL/api/cart/sync", {
+          await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/cart/sync`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
