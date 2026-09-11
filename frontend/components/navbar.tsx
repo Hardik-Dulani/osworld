@@ -4,17 +4,18 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { 
-  Menu, X, ShoppingBag, Search, Sparkles, Baby, Blocks, Flame, Tag, User as UserIcon, LogOut, Package
+  Menu, X, ShoppingBag, Search, Sparkles, Baby, Blocks, User as UserIcon, LogOut, Package, Home, Swords, Smile
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 
 const navLinks = [
-  { name: "All Toys", href: "/toys", icon: Blocks },
+  { name: "Home", href: "/", icon: Home },
   { name: "By Age", href: "/age-groups", icon: Baby },
-  { name: "Bestsellers", href: "/bestsellers", icon: Flame, badge: "Hot" },
-  { name: "Special Offers", href: "/offers", icon: Tag, badge: "Sale" },
+  { name: "Action Figures", href: "/category/action", icon: Swords },
+  { name: "Montessori & Wooden", href: "/category/wooden", icon: Blocks },
+  { name: "Plush & Cuddly", href: "/category/plush", icon: Smile },
 ];
 
 export default function Navbar() {
@@ -44,7 +45,6 @@ export default function Navbar() {
     }
   };
 
-  // NEW: Save the current page to localStorage before going to Auth
   const handleAuthRedirect = () => {
     if (typeof window !== "undefined") {
       localStorage.setItem('auth_redirect', window.location.pathname + window.location.search);
@@ -56,10 +56,11 @@ export default function Navbar() {
       <div className="mx-auto flex h-18 max-w-7xl items-center justify-between px-3 sm:px-6 lg:px-8">
         
         <div className="flex items-center gap-2 sm:gap-3">
+          {/* Changed xl:hidden to lg:hidden */}
           <button
             type="button"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-background text-foreground transition-all hover:bg-muted md:hidden"
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-background text-foreground transition-all hover:bg-muted lg:hidden"
           >
             {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -75,16 +76,21 @@ export default function Navbar() {
           </Link>
         </div>
 
-        <nav className="hidden md:flex items-center gap-1 lg:gap-2">
+        {/* Desktop Navigation - Changed hidden xl:flex to hidden lg:flex */}
+        <nav className="hidden lg:flex items-center gap-0.5 xl:gap-1">
           {navLinks.map((link) => (
-            <Link key={link.name} href={link.href} className="relative flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-foreground/80 hover:text-primary hover:bg-muted rounded-xl">
+            <Link 
+              key={link.name} 
+              href={link.href} 
+              className={`relative flex items-center gap-1.5 px-2.5 xl:px-3 py-2 text-sm font-bold rounded-xl transition-colors ${pathname === link.href ? "text-primary bg-primary/10" : "text-foreground/80 hover:text-primary hover:bg-muted"}`}
+            >
               <span>{link.name}</span>
             </Link>
           ))}
         </nav>
 
         <div className="flex items-center gap-3 sm:gap-4">
-          <div className="hidden lg:flex relative">
+          <div className="hidden xl:flex relative">
             <input
               type="text"
               placeholder="Search toys..."
@@ -131,8 +137,8 @@ export default function Navbar() {
       <AnimatePresence>
         {isMobileMenuOpen && (
           <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsMobileMenuOpen(false)} className="fixed inset-0 top-18 z-40 bg-foreground/50 md:hidden" />
-            <motion.aside initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }} transition={{ type: "spring", damping: 25, stiffness: 220 }} className="fixed inset-y-0 left-0 top-18 z-50 flex w-[85%] max-w-sm flex-col border-r border-border bg-card p-6 shadow-2xl md:hidden overflow-y-auto">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsMobileMenuOpen(false)} className="fixed inset-0 top-18 z-40 bg-foreground/50 lg:hidden" />
+            <motion.aside initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }} transition={{ type: "spring", damping: 25, stiffness: 220 }} className="fixed inset-y-0 left-0 top-18 z-50 flex w-[85%] max-w-sm flex-col border-r border-border bg-card p-6 shadow-2xl lg:hidden overflow-y-auto">
               
               <div className="mb-6 pb-6 border-b border-border">
                 {user ? (
@@ -176,9 +182,12 @@ export default function Navbar() {
               <nav className="flex flex-col space-y-2 mb-6">
                 {navLinks.map((link) => {
                   const Icon = link.icon;
+                  const isActive = pathname === link.href;
                   return (
-                    <Link key={link.name} href={link.href} onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 rounded-xl px-4 py-3 text-base font-semibold text-foreground hover:bg-muted">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-background border border-border text-primary"><Icon className="h-5 w-5" /></div>
+                    <Link key={link.name} href={link.href} onClick={() => setIsMobileMenuOpen(false)} className={`flex items-center gap-3 rounded-xl px-4 py-3 text-base font-semibold transition-colors ${isActive ? "bg-primary/10 text-primary" : "text-foreground hover:bg-muted"}`}>
+                      <div className={`flex h-9 w-9 items-center justify-center rounded-lg border ${isActive ? "bg-primary text-primary-foreground border-primary" : "bg-background border-border text-primary"}`}>
+                        <Icon className="h-5 w-5" />
+                      </div>
                       <span>{link.name}</span>
                     </Link>
                   );
