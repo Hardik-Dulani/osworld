@@ -12,7 +12,8 @@ DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 ALLOWED_HOSTS = ['*'] # For now, allow all. You can restrict this to your specific Render/Vercel URLs later.
 
 INSTALLED_APPS = [
-    # Core Django Apps (These were missing!)
+    # cloudinary_storage MUST come before django.contrib.staticfiles
+    'cloudinary_storage',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -22,12 +23,10 @@ INSTALLED_APPS = [
 
     # Third-Party Apps
     'corsheaders',
+    'cloudinary',
 
     # Your Apps
     'api',
-    'cloudinary_storage',
-  
-    'cloudinary',
 ]
 
 MIDDLEWARE = [
@@ -47,6 +46,7 @@ CLOUDINARY_STORAGE = {
     'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
     'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
 }
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates', # Fixes admin.E403
@@ -62,6 +62,7 @@ TEMPLATES = [
         },
     },
 ]
+
 # Database: Use Render's PostgreSQL if available, otherwise fallback to local SQLite
 DATABASES = {
     'default': dj_database_url.config(
@@ -70,10 +71,29 @@ DATABASES = {
     )
 }
 
-# Static files (Whitenoise needs this to serve CSS/JS in production)
+# ----------------- STORAGE CONFIGURATION -----------------
+# Static files (CSS, JS, Images for the admin panel)
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Media files (Product uploads)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+# Django 4.2+ standard for routing file storage
+STORAGES = {
+    "default": {
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+
+# Fallbacks for older Django versions
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# ---------------------------------------------------------
 
 # Allow your Vercel frontend to talk to your Render backend
 CORS_ALLOW_ALL_ORIGINS = True
@@ -86,8 +106,3 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# Media files (for product images)
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
