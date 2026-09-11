@@ -59,6 +59,8 @@ class CartItem(models.Model):
     def __str__(self):
         return f"{self.quantity} x {self.product.name}"
 
+import os
+
 class ProductMedia(models.Model):
     product = models.ForeignKey(Product, related_name='gallery', on_delete=models.CASCADE)
     file = models.FileField(upload_to='product_gallery/')
@@ -66,9 +68,16 @@ class ProductMedia(models.Model):
     
     @property
     def media_url(self):
-        if self.file:
-            return self.file.url
-        return ""
+        if not self.file:
+            return ""
+        url = self.file.url
+        # If Cloudinary returns a relative or legacy path, force absolute URL structure
+        if url.startswith('http'):
+            return url
+        cloud_name = os.environ.get('CLOUDINARY_CLOUD_NAME', '')
+        if cloud_name and not url.startswith('/'):
+            return f"https://res.cloudinary.com/{cloud_name}/image/upload/{url}"
+        return url
 
     def __str__(self):
         return f"{self.product.name} Media"
