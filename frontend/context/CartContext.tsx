@@ -30,7 +30,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     if (!user) return;
-    fetch(`http://127.0.0.1:8000/api/cart/${user.id}`)
+    fetch(`process.env.NEXT_PUBLIC_API_URL/api/cart/${user.id}`)
       .then(res => res.json())
       .then(dbItems => {
         if (dbItems.length > 0) {
@@ -75,7 +75,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const syncToBackend = (items: any[]) => {
-    fetch("http://127.0.0.1:8000/api/cart/sync", {
+    fetch("process.env.NEXT_PUBLIC_API_URL/api/cart/sync", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

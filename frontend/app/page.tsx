@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Sparkles } from "lucide-react"; 
 // Import the Grid and the Product Interface we just created
-import ProductGrid, { Product } from "@/components/ProductGrid";
+import ProductGrid from "@/components/ProductGrid";
 
 function Storefront() {
   const searchParams = useSearchParams();
@@ -14,7 +14,7 @@ function Storefront() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/api/products")
+    fetch("process.env.NEXT_PUBLIC_API_URL/api/products")
       .then((res) => res.json())
       .then((data) => {
         setAllProducts(data);

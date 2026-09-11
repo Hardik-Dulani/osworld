@@ -47,7 +47,7 @@ export default function OrderDetailsPage() {
   const fetchOrder = () => {
     if (!user) return;
     
-    fetch(`http://127.0.0.1:8000/api/orders/${params.id}?user_id=${user.id}`)
+    fetch(`process.env.NEXT_PUBLIC_API_URL/api/orders/${params.id}?user_id=${user.id}`)
       .then((res) => { if (!res.ok) throw new Error("Not found or Unauthorized"); return res.json(); })
       .then((data) => { setOrder(data); setIsLoading(false); })
       .catch(() => { setIsLoading(false); });
@@ -64,7 +64,7 @@ export default function OrderDetailsPage() {
     fetchOrder(); 
   }, [params.id, user, isAuthLoading, router]);
 
-  const getFullUrl = (url: string) => url ? (url.startsWith('http') ? url : `http://127.0.0.1:8000${url}`) : "";
+  const getFullUrl = (url: string) => url ? (url.startsWith('http') ? url : `process.env.NEXT_PUBLIC_API_URL${url}`) : "";
 
   const handleStatusUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,7 +74,7 @@ export default function OrderDetailsPage() {
     const newStatus = modalType === "Cancel" ? "Cancelled" : "Returned";
 
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/orders/${order.id}/status?user_id=${user.id}`, {
+      const res = await fetch(`process.env.NEXT_PUBLIC_API_URL/api/orders/${order.id}/status?user_id=${user.id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus, reason: modalReason })
@@ -95,7 +95,7 @@ export default function OrderDetailsPage() {
     if (!reviewForm.comment || !reviewProduct || !user) return;
     setIsSubmittingReview(true);
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/products/${reviewProduct.product_id}/reviews`, {
+      const res = await fetch(`process.env.NEXT_PUBLIC_API_URL/api/products/${reviewProduct.product_id}/reviews`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ author_name: user.name, rating: reviewForm.rating, comment: reviewForm.comment }),

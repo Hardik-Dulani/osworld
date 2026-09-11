@@ -15,7 +15,7 @@ export default function ProductGrid({ products }: { products: any[] }) {
 
   const getFullUrl = (url: string) => {
     if (!url) return "";
-    return url.startsWith('http') ? url : `http://127.0.0.1:8000${url}`;
+    return url.startsWith('http') ? url : `process.env.NEXT_PUBLIC_API_URL${url}`;
   };
 
   return (

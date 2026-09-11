@@ -27,7 +27,7 @@ export default function AuthPage() {
     const endpoint = isLogin ? "/api/auth/login" : "/api/auth/register";
     
     try {
-      const res = await fetch(`http://127.0.0.1:8000${endpoint}`, {
+      const res = await fetch(`process.env.NEXT_PUBLIC_API_URL${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -43,7 +43,7 @@ export default function AuthPage() {
         // Sync Guest Cart
         const localCart = JSON.parse(localStorage.getItem("osworld_cart") || "[]");
         if (localCart.length > 0) {
-          await fetch("http://127.0.0.1:8000/api/cart/sync", {
+          await fetch("process.env.NEXT_PUBLIC_API_URL/api/cart/sync", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
