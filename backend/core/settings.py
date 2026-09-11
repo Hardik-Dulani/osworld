@@ -68,3 +68,16 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Allow your Vercel frontend to talk to your Render backend
 CORS_ALLOW_ALL_ORIGINS = True
+
+# Tells Django where your urls.py file is
+ROOT_URLCONF = 'core.urls'
+
+# Tells Django where your wsgi.py file is
+WSGI_APPLICATION = 'core.wsgi.application'
+
+# Default primary key field type
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Media files (for product images)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
