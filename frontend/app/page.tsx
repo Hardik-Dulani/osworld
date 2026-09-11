@@ -9,8 +9,8 @@ import ProductGrid from "@/components/ProductGrid";
 function Storefront() {
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get("search")?.toLowerCase() || "";
-  
-  const [allProducts, setAllProducts] = useState<Product[]>([]);
+ 
+  const [allProducts, setAllProducts]= useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
