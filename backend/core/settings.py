@@ -1,8 +1,8 @@
 import os
 import dj_database_url
-from whitenoise.storage import CompressedStaticFilesStorage
-
-
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -12,10 +12,9 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'your-secret-key-here')
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 # Allow Render domains and your Vercel frontend
-ALLOWED_HOSTS = ['*'] # For now, allow all. You can restrict this to your specific Render/Vercel URLs later.
+ALLOWED_HOSTS = ['*'] 
 
 INSTALLED_APPS = [
-    # cloudinary_storage MUST come before django.contrib.staticfiles
     'cloudinary_storage',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -23,36 +22,42 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
-    # Third-Party Apps
     'corsheaders',
     'cloudinary',
-
-    # Your Apps
     'api',
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',  # Must be at the absolute top
+    'corsheaders.middleware.CorsMiddleware',  
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # Must be right after SecurityMiddleware
+    'whitenoise.middleware.WhiteNoiseMiddleware',  
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',  # Fixes admin.E408
-    'django.contrib.messages.middleware.MessageMiddleware',     # Fixes admin.E409
+    'django.contrib.auth.middleware.AuthenticationMiddleware',  
+    'django.contrib.messages.middleware.MessageMiddleware',     
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# ----------------- CLOUDINARY CONFIGURATION -----------------
+# We define it twice: once for Django Storage, once for the Cloudinary SDK. 
+# This leaves zero room for silent fallbacks to local storage.
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
     'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
     'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
 }
 
+cloudinary.config( 
+  cloud_name = os.environ.get('CLOUDINARY_CLOUD_NAME'), 
+  api_key = os.environ.get('CLOUDINARY_API_KEY'), 
+  api_secret = os.environ.get('CLOUDINARY_API_SECRET'),
+  secure = True
+)
+
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates', # Fixes admin.E403
+        'BACKEND': 'django.template.backends.django.DjangoTemplates', 
         'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -66,7 +71,6 @@ TEMPLATES = [
     },
 ]
 
-# Database: Use Render's PostgreSQL if available, otherwise fallback to local SQLite
 DATABASES = {
     'default': dj_database_url.config(
         default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
@@ -74,17 +78,14 @@ DATABASES = {
     )
 }
 
-# ----------------- STORAGE CONFIGURATION -----------------
-# Static files (CSS, JS, Images for the admin panel)
+# ----------------- STATIC & MEDIA CONFIGURATION -----------------
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# Media files (Product uploads)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-
-
+# This is the crash-proof storage dictionary.
 STORAGES = {
     "default": {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
@@ -93,24 +94,13 @@ STORAGES = {
         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
 }
-# You can delete these old fallback lines entirely to prevent conflicts:
-# DEFAULT_FILE_STORAGE = ...
-# STATICFILES_STORAGE = ...
-# WHITENOISE_MANIFEST_STRICT = False
 
-# Fallbacks for older Django versions
+# Fallbacks
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
-# ---------------------------------------------------------
+# -----------------------------------------------------------------
 
-# Allow your Vercel frontend to talk to your Render backend
 CORS_ALLOW_ALL_ORIGINS = True
-
-# Tells Django where your urls.py file is
 ROOT_URLCONF = 'core.urls'
-
-# Tells Django where your wsgi.py file is
 WSGI_APPLICATION = 'core.wsgi.application'
-
-# Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
