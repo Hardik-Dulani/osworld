@@ -103,3 +103,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 ROOT_URLCONF = 'core.urls'
 WSGI_APPLICATION = 'core.wsgi.application'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Force WhiteNoise to bypass the broken staticfiles folder and serve CSS directly
+WHITENOISE_USE_FINDERS = True
+WHITENOISE_AUTOREFRESH = True
